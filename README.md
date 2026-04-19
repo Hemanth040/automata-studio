@@ -42,18 +42,10 @@ A web-based tool for converting Regular Expressions to NFAs, DFAs, and Minimized
 | `a?b+` | Optional 'a' followed by one or more 'b' |
 | `(a|b)*` | Any combination of 'a' and 'b' |
 
-## Deployment
-
-This project is deployed on Vercel. Simply push to GitHub and Vercel will automatically deploy.
-
 ## Technology
 
 - Pure HTML/CSS/JavaScript (no dependencies)
-- Canvas API for visualization
 - Thompson's Construction for NFA
 - Subset Construction for NFA→DFA
 - Partition Refinement for DFA Minimization
 
-## License
-
-MIT License
