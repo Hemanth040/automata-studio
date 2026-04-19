@@ -1699,7 +1699,14 @@
                 document.getElementById('panel-badge').textContent = 'Converting…';
                 this.appendLog(step.desc);
             }
+            // Force complete conversion if no more steps available
             if (!this.converter.getNextStep()) {
+                // Ensure all remaining steps are processed for complete DFA
+                let remainingStep = this.converter.getNextStep();
+                while (remainingStep) {
+                    this.converter.stepForward();
+                    remainingStep = this.converter.getNextStep();
+                }
                 this.dfa = this.converter.dfa.clone();
                 this.currentStep = 2;
                 this.updatePipeline();
@@ -1708,8 +1715,9 @@
                 this.setButtonState('btn-dfa-step', false);
                 this.setButtonState('btn-dfa-animate', false);
                 document.getElementById('panel-badge').textContent = 'Ready';
+            } else {
+                this.setButtonState('btn-dfa-reset', true);
             }
-            this.setButtonState('btn-dfa-reset', true);
         },
 
         dfaAnimate() {
@@ -1733,6 +1741,12 @@
                 }
                 if (!this.converter.getNextStep()) {
                     this.stopAnim();
+                    // Force complete conversion
+                    let remainingStep = this.converter.getNextStep();
+                    while (remainingStep) {
+                        this.converter.stepForward();
+                        remainingStep = this.converter.getNextStep();
+                    }
                     this.dfa = this.converter.dfa.clone();
                     this.currentStep = 2;
                     this.updatePipeline();
