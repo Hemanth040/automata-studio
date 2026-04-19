@@ -1699,13 +1699,19 @@
                 document.getElementById('panel-badge').textContent = 'Converting…';
                 this.appendLog(step.desc);
             }
-            // Force complete conversion if no more steps available
+            // Force complete conversion when no more steps available
             if (!this.converter.getNextStep()) {
-                // Ensure all remaining steps are processed for complete DFA
-                let remainingStep = this.converter.getNextStep();
-                while (remainingStep) {
+                // Force completion - process ALL remaining steps including unreachable state cleanup
+                let moreSteps = true;
+                while (moreSteps) {
+                    const step = this.converter.stepForward();
+                    moreSteps = step !== null && this.converter.getNextStep() !== null;
+                }
+                // Final cleanup - ensure unreachable states are removed
+                const lastStep = this.converter.getNextStep();
+                while (lastStep) {
                     this.converter.stepForward();
-                    remainingStep = this.converter.getNextStep();
+                    break; // Only need to run once for cleanup
                 }
                 this.dfa = this.converter.dfa.clone();
                 this.currentStep = 2;
@@ -1741,12 +1747,15 @@
                 }
                 if (!this.converter.getNextStep()) {
                     this.stopAnim();
-                    // Force complete conversion
+                    // Force complete conversion - including unreachable state cleanup
                     let remainingStep = this.converter.getNextStep();
                     while (remainingStep) {
                         this.converter.stepForward();
                         remainingStep = this.converter.getNextStep();
                     }
+                    // Final cleanup for unreachable states
+                    this.converter.stepForward();
+                    
                     this.dfa = this.converter.dfa.clone();
                     this.currentStep = 2;
                     this.updatePipeline();
