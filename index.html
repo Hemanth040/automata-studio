@@ -1,0 +1,1811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automata Studio</title>
+    <style>
+        :root {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --bg-input: #f1f5f9;
+            --border: #e2e8f0;
+            --border-active: #3b82f6;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+            --accent-blue: #2563eb;
+            --accent-blue-dim: #eff6ff;
+            --accent-green: #059669;
+            --accent-green-dim: #ecfdf5;
+            --accent-amber: #d97706;
+            --accent-amber-dim: #fffbeb;
+            --accent-purple: #7c3aed;
+            --accent-purple-dim: #f5f3ff;
+            --accent-red: #dc2626;
+            --accent-red-dim: #fef2f2;
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.85);
+            border-bottom: 1px solid var(--border);
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .header-logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .header h1 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .header h1 span { color: var(--text-muted); font-weight: 400; }
+
+        .header-actions { display: flex; gap: 0.5rem; }
+
+        /* Layout */
+        .app-layout {
+            display: flex;
+            height: calc(100vh - 53px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 340px;
+            min-width: 340px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-section:last-child { border-bottom: none; }
+
+        .section-title {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+        }
+
+        /* Input */
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 0.625rem 0.875rem;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+            transition: border-color var(--transition), box-shadow var(--transition);
+        }
+
+        .input-wrapper input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px var(--accent-blue-dim);
+        }
+
+        .input-wrapper input::placeholder { color: var(--text-muted); }
+
+        .input-hint {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 0.375rem;
+        }
+
+        /* Presets */
+        .presets {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.375rem;
+            margin-top: 0.75rem;
+        }
+
+        .preset-chip {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 9999px;
+            padding: 0.25rem 0.625rem;
+            font-size: 0.7rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+
+        .preset-chip:hover {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+            background: var(--accent-blue-dim);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1rem;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition);
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .btn:not(:disabled):hover { transform: translateY(-1px); }
+        .btn:not(:disabled):active { transform: translateY(0); }
+
+        .btn-blue {
+            background: var(--accent-blue);
+            color: white;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+        }
+        .btn-blue:not(:disabled):hover { background: #1d4ed8; }
+
+        .btn-green {
+            background: var(--accent-green);
+            color: white;
+            box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2);
+        }
+        .btn-green:not(:disabled):hover { background: #047857; }
+
+        .btn-amber {
+            background: var(--accent-amber);
+            color: white;
+            box-shadow: 0 2px 8px rgba(217, 119, 6, 0.2);
+        }
+        .btn-amber:not(:disabled):hover { background: #b45309; }
+
+        .btn-purple {
+            background: var(--accent-purple);
+            color: white;
+            box-shadow: 0 2px 8px rgba(124, 58, 237, 0.2);
+        }
+        .btn-purple:not(:disabled):hover { background: #6d28d9; }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+        .btn-ghost:not(:disabled):hover {
+            background: var(--bg-card);
+            border-color: var(--text-muted);
+        }
+
+        .btn-danger-ghost {
+            background: transparent;
+            color: var(--accent-red);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        .btn-danger-ghost:not(:disabled):hover {
+            background: var(--accent-red-dim);
+        }
+
+        .btn-sm { padding: 0.375rem 0.75rem; font-size: 0.75rem; }
+
+        .btn-group { display: flex; flex-direction: column; gap: 0.5rem; }
+
+        .btn-row { display: flex; gap: 0.375rem; }
+        .btn-row .btn { flex: 1; }
+
+        /* Pipeline Steps */
+        .pipeline-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .pipeline-step {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.625rem 0;
+            cursor: pointer;
+            transition: opacity var(--transition);
+        }
+
+        .pipeline-step.disabled { opacity: 0.3; pointer-events: none; }
+
+        .step-indicator {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            border: 2px solid var(--border);
+            color: var(--text-muted);
+            transition: all var(--transition);
+            flex-shrink: 0;
+        }
+
+        .pipeline-step.active .step-indicator {
+            border-color: var(--accent-blue);
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .pipeline-step.done .step-indicator {
+            border-color: var(--accent-green);
+            background: var(--accent-green);
+            color: white;
+        }
+
+        .step-info { flex: 1; min-width: 0; }
+        .step-label { font-size: 0.8rem; font-weight: 600; }
+        .step-desc { font-size: 0.7rem; color: var(--text-muted); }
+
+        .step-connector {
+            width: 2px;
+            height: 16px;
+            background: var(--border);
+            margin-left: 13px;
+        }
+
+        .step-connector.done { background: var(--accent-green); }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Tabs */
+        .tabs-bar {
+            display: flex;
+            align-items: center;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 0 1rem;
+            gap: 0;
+            min-height: 44px;
+        }
+
+        .tab {
+            padding: 0.625rem 1.25rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            user-select: none;
+        }
+
+        .tab:hover { color: var(--text-secondary); }
+
+        .tab.active {
+            color: var(--text-primary);
+            border-bottom-color: var(--accent-blue);
+        }
+
+        .tab .tab-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--text-muted);
+        }
+
+        .tab.active .tab-dot { background: var(--accent-green); }
+
+        .tab .tab-count {
+            font-size: 0.65rem;
+            background: var(--bg-card);
+            padding: 0.1rem 0.4rem;
+            border-radius: 9999px;
+            color: var(--text-muted);
+        }
+
+        .tab.active .tab-count {
+            background: var(--accent-blue-dim);
+            color: var(--accent-blue);
+        }
+
+        .tab-spacer { flex: 1; }
+
+        .tab-actions { display: flex; gap: 0.375rem; align-items: center; }
+
+        /* Content Area */
+        .content-area {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .canvas-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .canvas-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .canvas-toolbar .tool-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 0.3rem 0.5rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all var(--transition);
+        }
+
+        .canvas-toolbar .tool-btn:hover {
+            border-color: var(--text-muted);
+            color: var(--text-primary);
+        }
+
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background-color: #ffffff;
+            background-image: radial-gradient(#e2e8f0 1.5px, transparent 1.5px);
+            background-size: 28px 28px;
+        }
+
+        .canvas-container canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .canvas-empty {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            gap: 0.75rem;
+        }
+
+        .canvas-empty-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .canvas-empty p { font-size: 0.85rem; }
+        .canvas-empty .hint { font-size: 0.75rem; }
+
+        /* Side Panel (table + info) */
+        .side-panel {
+            width: 320px;
+            min-width: 320px;
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .side-panel-header {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .side-panel-header h3 {
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .side-panel-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.75rem;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 0.625rem 0.75rem;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .stat-label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-blue .stat-value { color: var(--accent-blue); }
+        .stat-green .stat-value { color: var(--accent-green); }
+        .stat-amber .stat-value { color: var(--accent-amber); }
+        .stat-purple .stat-value { color: var(--accent-purple); }
+
+        /* Transition Table */
+        .table-section { margin-top: 0.5rem; }
+
+        .table-section h4 {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .delta-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.72rem;
+        }
+
+        .delta-table th {
+            background: var(--bg-card);
+            color: var(--text-muted);
+            font-weight: 600;
+            padding: 0.4rem 0.5rem;
+            text-align: center;
+            border: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+        }
+
+        .delta-table td {
+            padding: 0.35rem 0.5rem;
+            text-align: center;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.68rem;
+        }
+
+        .delta-table tr:hover td { background: rgba(59, 130, 246, 0.05); }
+
+        .delta-table .state-cell {
+            font-weight: 600;
+            color: var(--text-primary);
+            text-align: left;
+        }
+
+        .delta-table .accept-marker { color: var(--accent-green); }
+        .delta-table .start-marker { color: var(--accent-blue); }
+        .delta-table .empty-cell { color: var(--text-muted); opacity: 0.4; }
+
+        /* Result Banner */
+        .result-banner {
+            margin-top: 0.75rem;
+            padding: 0.625rem 0.75rem;
+            border-radius: var(--radius-md);
+            font-size: 0.78rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .result-banner.accept {
+            background: var(--accent-green-dim);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: var(--accent-green);
+        }
+
+        .result-banner.reject {
+            background: var(--accent-red-dim);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: var(--accent-red);
+        }
+
+        .result-banner.info {
+            background: var(--accent-blue-dim);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            color: var(--accent-blue);
+        }
+
+        /* Step Log */
+        .step-log {
+            margin-top: 0.75rem;
+        }
+
+        .step-log h4 {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .log-entries {
+            max-height: 200px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .log-entry {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            padding: 0.3rem 0.5rem;
+            background: var(--bg-card);
+            border-radius: var(--radius-sm);
+            font-family: 'JetBrains Mono', monospace;
+            line-height: 1.4;
+        }
+
+        .log-entry .log-num {
+            color: var(--text-muted);
+            margin-right: 0.375rem;
+        }
+
+        /* Simulation */
+        .sim-section {
+            display: flex;
+            gap: 0.5rem;
+            align-items: flex-end;
+        }
+
+        .sim-section .input-wrapper { flex: 1; }
+
+        /* Responsive */
+        @media (max-width: 1100px) {
+            .app-layout { flex-direction: column; height: auto; }
+            .sidebar { width: 100%; min-width: auto; max-height: none; border-right: none; border-bottom: 1px solid var(--border); }
+            .side-panel { width: 100%; min-width: auto; border-left: none; border-top: 1px solid var(--border); max-height: 400px; }
+            .canvas-container { min-height: 350px; }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in { animation: fadeIn 0.25s ease-out; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .pulse { animation: pulse 1.5s ease-in-out infinite; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-brand">
+            <div class="header-logo">A</div>
+            <h1>Automata Studio <span>/ Interactive Visualizer</span></h1>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-ghost btn-sm" id="btn-reset-all" title="Reset everything">Reset</button>
+        </div>
+    </header>
+
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <!-- Regex Input -->
+            <div class="sidebar-section">
+                <div class="section-title">Regular Expression</div>
+                <div class="input-wrapper">
+                    <input type="text" id="regex-input" placeholder="(a|b)*abb" value="(a|b)*abb" spellcheck="false" autocomplete="off">
+                </div>
+                <div class="input-hint">Operators: <code>|</code> <code>*</code> <code>+</code> <code>?</code> <code>.</code> <code>( )</code></div>
+                <div class="presets">
+                    <span class="preset-chip" data-regex="(a|b)*abb">(a|b)*abb</span>
+                    <span class="preset-chip" data-regex="a*b*c*">a*b*c*</span>
+                    <span class="preset-chip" data-regex="(0|1)*01">(0|1)*01</span>
+                    <span class="preset-chip" data-regex="a.b.c*">a.b.c*</span>
+                    <span class="preset-chip" data-regex="(a|b)*a(a|b)*">(a|b)*a(a|b)*</span>
+                    <span class="preset-chip" data-regex="ab*|cd+">ab*|cd+</span>
+                </div>
+            </div>
+
+            <!-- Test String -->
+            <div class="sidebar-section">
+                <div class="section-title">Test String</div>
+                <div class="sim-section">
+                    <div class="input-wrapper">
+                        <input type="text" id="test-string" placeholder="aababb" spellcheck="false" autocomplete="off">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pipeline Steps -->
+            <div class="sidebar-section">
+                <div class="section-title">Pipeline</div>
+                <div class="pipeline-steps">
+                    <div class="pipeline-step active" id="step-1" onclick="App.goToStep(1)">
+                        <div class="step-indicator">1</div>
+                        <div class="step-info">
+                            <div class="step-label">Regex → NFA</div>
+                            <div class="step-desc">Thompson's Construction</div>
+                        </div>
+                    </div>
+                    <div class="step-connector" id="conn-1"></div>
+                    <div class="pipeline-step disabled" id="step-2" onclick="App.goToStep(2)">
+                        <div class="step-indicator">2</div>
+                        <div class="step-info">
+                            <div class="step-label">NFA → DFA</div>
+                            <div class="step-desc">Subset Construction</div>
+                        </div>
+                    </div>
+                    <div class="step-connector" id="conn-2"></div>
+                    <div class="pipeline-step disabled" id="step-3" onclick="App.goToStep(3)">
+                        <div class="step-indicator">3</div>
+                        <div class="step-info">
+                            <div class="step-label">Minimize DFA</div>
+                            <div class="step-desc">Hopcroft's Algorithm</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="sidebar-section">
+                <div class="section-title">Actions</div>
+                <div class="btn-group">
+                    <button class="btn btn-blue" id="btn-regex-nfa">Build NFA</button>
+                    <button class="btn btn-green" id="btn-simulate" disabled>Simulate on Current</button>
+                    <div class="btn-row">
+                        <button class="btn btn-amber btn-sm" id="btn-dfa-all" disabled>All at Once</button>
+                        <button class="btn btn-amber btn-sm" id="btn-dfa-step" disabled>Step-by-Step</button>
+                    </div>
+                    <button class="btn btn-amber" id="btn-dfa-animate" disabled>Animate Conversion</button>
+                    <button class="btn btn-purple" id="btn-minimize" disabled>Minimize DFA</button>
+                    <button class="btn btn-danger-ghost btn-sm" id="btn-dfa-reset" disabled style="display:none;">Reset DFA Step</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Tabs -->
+            <div class="tabs-bar">
+                <div class="tab active" id="tab-nfa" data-tab="nfa">
+                    <span class="tab-dot"></span>
+                    NFA
+                    <span class="tab-count" id="tab-nfa-count">—</span>
+                </div>
+                <div class="tab" id="tab-dfa" data-tab="dfa">
+                    <span class="tab-dot"></span>
+                    DFA
+                    <span class="tab-count" id="tab-dfa-count">—</span>
+                </div>
+                <div class="tab" id="tab-min" data-tab="min">
+                    <span class="tab-dot"></span>
+                    Minimized DFA
+                    <span class="tab-count" id="tab-min-count">—</span>
+                </div>
+                <div class="tab-spacer"></div>
+                <div class="tab-actions">
+                    <button class="tool-btn" id="btn-zoom-in" title="Zoom In">+</button>
+                    <button class="tool-btn" id="btn-zoom-out" title="Zoom Out">−</button>
+                    <button class="tool-btn" id="btn-zoom-fit" title="Fit to View">Fit</button>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="content-area">
+                <!-- Canvas -->
+                <div class="canvas-panel">
+                    <div class="canvas-container" id="canvas-container">
+                        <canvas id="main-canvas"></canvas>
+                        <div class="canvas-empty" id="canvas-empty">
+                            <div class="canvas-empty-icon">A</div>
+                            <p>No automaton to display</p>
+                            <span class="hint">Enter a regex and click "Build NFA" to start</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Side Panel -->
+                <div class="side-panel">
+                    <div class="side-panel-header">
+                        <h3 id="panel-title">NFA Details</h3>
+                        <span class="tab-count" id="panel-badge">Pending</span>
+                    </div>
+                    <div class="side-panel-body" id="panel-body">
+                        <div id="panel-stats"></div>
+                        <div id="panel-result"></div>
+                        <div class="table-section" id="panel-table-section">
+                            <h4>Transition Table</h4>
+                            <div id="panel-table"></div>
+                        </div>
+                        <div class="step-log" id="panel-log" style="display:none;">
+                            <h4>Conversion Log</h4>
+                            <div class="log-entries" id="log-entries"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+    // ============================================================
+    // MODULE 1: AUTOMATON
+    // ============================================================
+    class Automaton {
+        constructor() {
+            this.states = [];
+            this.alphabet = [];
+            this.transitions = {};
+            this.startState = null;
+            this.acceptStates = [];
+            this.isDFA = false;
+        }
+        addState(name, isAccept = false) {
+            if (!this.states.includes(name)) {
+                this.states.push(name);
+                this.transitions[name] = {};
+            }
+            if (isAccept && !this.acceptStates.includes(name)) this.acceptStates.push(name);
+        }
+        addTransition(from, symbol, to) {
+            this.addState(from); this.addState(to);
+            if (!this.transitions[from][symbol]) this.transitions[from][symbol] = [];
+            if (!this.transitions[from][symbol].includes(to)) this.transitions[from][symbol].push(to);
+            if (!this.alphabet.includes(symbol)) this.alphabet.push(symbol);
+        }
+        setStartState(name) { this.addState(name); this.startState = name; }
+        setAcceptState(name, value) {
+            this.addState(name);
+            if (value) { if (!this.acceptStates.includes(name)) this.acceptStates.push(name); }
+            else { this.acceptStates = this.acceptStates.filter(s => s !== name); }
+        }
+        getTransitions(from, symbol) {
+            return (this.transitions[from] && this.transitions[from][symbol]) || [];
+        }
+        clone() {
+            const a = new Automaton();
+            a.states = [...this.states]; a.alphabet = [...this.alphabet];
+            a.startState = this.startState; a.acceptStates = [...this.acceptStates];
+            a.isDFA = this.isDFA;
+            a.transitions = JSON.parse(JSON.stringify(this.transitions));
+            return a;
+        }
+    }
+
+    // ============================================================
+    // MODULE 2: REGEX TO NFA
+    // ============================================================
+    class RegexToNFA {
+        constructor() { this.stateCounter = 0; }
+        nextState() { return 'q' + (this.stateCounter++); }
+        shunt(infix) {
+            const specials = { '*': 60, '+': 55, '?': 50, '.': 40, '|': 20 };
+            let postfix = ''; const stack = [];
+            for (let i = 0; i < infix.length; i++) {
+                const c = infix[i];
+                if (c === '(') stack.push(c);
+                else if (c === ')') {
+                    while (stack.length && stack[stack.length-1] !== '(') postfix += stack.pop();
+                    if (stack.length) stack.pop();
+                } else if (specials[c] !== undefined) {
+                    while (stack.length && stack[stack.length-1] !== '(' && specials[stack[stack.length-1]] >= specials[c])
+                        postfix += stack.pop();
+                    stack.push(c);
+                } else postfix += c;
+            }
+            while (stack.length) postfix += stack.pop();
+            return postfix;
+        }
+        addImplicitConcat(regex) {
+            let result = '';
+            for (let i = 0; i < regex.length; i++) {
+                result += regex[i];
+                if (i + 1 < regex.length) {
+                    const curr = regex[i], next = regex[i+1];
+                    const currOp = '(|*+?.'.includes(curr);
+                    const nextOp = ')|*+?.'.includes(next);
+                    if (!currOp && !nextOp) result += '.';
+                    if (curr === ')' && !nextOp) result += '.';
+                    if ('*+?'.includes(curr) && !nextOp) result += '.';
+                }
+            }
+            return result;
+        }
+        buildNFA(postfix) {
+            this.stateCounter = 0; const stack = [];
+            for (let i = 0; i < postfix.length; i++) {
+                const c = postfix[i];
+                if (c === '.') {
+                    if (stack.length < 2) throw new Error('Invalid concatenation');
+                    const nfa2 = stack.pop(), nfa1 = stack.pop();
+                    nfa1.transitions[nfa1._accept]['ε'] = (nfa1.transitions[nfa1._accept]['ε'] || []).concat([nfa2._start]);
+                    const m = new Automaton();
+                    m.states = [...nfa1.states, ...nfa2.states];
+                    m.alphabet = [...new Set([...nfa1.alphabet, ...nfa2.alphabet])];
+                    m.transitions = { ...nfa1.transitions, ...nfa2.transitions };
+                    m.startState = nfa1._start; m._start = nfa1._start; m._accept = nfa2._accept;
+                    m.acceptStates = [nfa2._accept];
+                    stack.push(m);
+                } else if (c === '|') {
+                    if (stack.length < 2) throw new Error('Invalid alternation');
+                    const nfa2 = stack.pop(), nfa1 = stack.pop();
+                    const ns = this.nextState(), na = this.nextState();
+                    const nfa = new Automaton();
+                    nfa.states = [ns, na, ...nfa1.states, ...nfa2.states];
+                    nfa.alphabet = [...new Set([...nfa1.alphabet, ...nfa2.alphabet])];
+                    nfa.transitions = { ...nfa1.transitions, ...nfa2.transitions, [ns]: { 'ε': [nfa1._start, nfa2._start] }, [na]: {} };
+                    nfa.transitions[nfa1._accept]['ε'] = (nfa.transitions[nfa1._accept]['ε'] || []).concat([na]);
+                    nfa.transitions[nfa2._accept]['ε'] = (nfa.transitions[nfa2._accept]['ε'] || []).concat([na]);
+                    nfa.startState = ns; nfa._start = ns; nfa._accept = na;
+                    nfa.acceptStates = [na];
+                    stack.push(nfa);
+                } else if (c === '*') {
+                    if (stack.length < 1) throw new Error('Invalid *');
+                    const nfa1 = stack.pop();
+                    const ns = this.nextState(), na = this.nextState();
+                    const nfa = new Automaton();
+                    nfa.states = [ns, na, ...nfa1.states];
+                    nfa.alphabet = [...nfa1.alphabet];
+                    nfa.transitions = { ...nfa1.transitions, [ns]: { 'ε': [nfa1._start, na] }, [na]: {} };
+                    nfa.transitions[nfa1._accept]['ε'] = (nfa.transitions[nfa1._accept]['ε'] || []).concat([nfa1._start, na]);
+                    nfa.startState = ns; nfa._start = ns; nfa._accept = na;
+                    nfa.acceptStates = [na];
+                    stack.push(nfa);
+                } else if (c === '+') {
+                    if (stack.length < 1) throw new Error('Invalid +');
+                    const nfa1 = stack.pop();
+                    const na = this.nextState();
+                    const nfa = new Automaton();
+                    nfa.states = [na, ...nfa1.states];
+                    nfa.alphabet = [...nfa1.alphabet];
+                    nfa.transitions = { ...nfa1.transitions, [na]: {} };
+                    nfa.transitions[nfa1._accept]['ε'] = (nfa.transitions[nfa1._accept]['ε'] || []).concat([nfa1._start, na]);
+                    nfa.startState = nfa1._start; nfa._start = nfa1._start; nfa._accept = na;
+                    nfa.acceptStates = [na];
+                    stack.push(nfa);
+                } else if (c === '?') {
+                    if (stack.length < 1) throw new Error('Invalid ?');
+                    const nfa1 = stack.pop();
+                    const ns = this.nextState(), na = this.nextState();
+                    const nfa = new Automaton();
+                    nfa.states = [ns, na, ...nfa1.states];
+                    nfa.alphabet = [...nfa1.alphabet];
+                    nfa.transitions = { ...nfa1.transitions, [ns]: { 'ε': [nfa1._start, na] }, [na]: {} };
+                    nfa.transitions[nfa1._accept]['ε'] = (nfa.transitions[nfa1._accept]['ε'] || []).concat([na]);
+                    nfa.startState = ns; nfa._start = ns; nfa._accept = na;
+                    nfa.acceptStates = [na];
+                    stack.push(nfa);
+                } else {
+                    const s = this.nextState(), a = this.nextState();
+                    const nfa = new Automaton();
+                    nfa.states = [s, a]; nfa.alphabet = [c];
+                    nfa.transitions = { [s]: { [c]: [a] }, [a]: {} };
+                    nfa.startState = s; nfa._start = s; nfa._accept = a;
+                    nfa.acceptStates = [a];
+                    stack.push(nfa);
+                }
+            }
+            if (stack.length !== 1) throw new Error('Malformed regex');
+            return stack[0];
+        }
+        convert(regex) {
+            const withConcat = this.addImplicitConcat(regex);
+            const postfix = this.shunt(withConcat);
+            const nfa = this.buildNFA(postfix);
+            delete nfa._start;
+            delete nfa._accept;
+            return { nfa, postfix, modifiedRegex: withConcat };
+        }
+    }
+
+    // ============================================================
+    // MODULE 3: NFA SIMULATOR
+    // ============================================================
+    class NFASimulator {
+        static epsilonClosure(nfa, states) {
+            const closure = new Set(states);
+            const stack = [...states];
+            while (stack.length) {
+                const state = stack.pop();
+                const eps = nfa.transitions[state] && nfa.transitions[state]['ε'];
+                if (eps) for (const t of eps) { if (!closure.has(t)) { closure.add(t); stack.push(t); } }
+            }
+            return closure;
+        }
+        static simulate(nfa, inputString) {
+            let current = this.epsilonClosure(nfa, [nfa.startState]);
+            for (let i = 0; i < inputString.length; i++) {
+                const next = new Set();
+                for (const state of current) {
+                    const targets = nfa.transitions[state] && nfa.transitions[state][inputString[i]];
+                    if (targets) for (const t of targets) next.add(t);
+                }
+                current = this.epsilonClosure(nfa, [...next]);
+                if (current.size === 0) return false;
+            }
+            return [...current].some(s => nfa.acceptStates.includes(s));
+        }
+    }
+
+    // ============================================================
+    // MODULE 4: NFA TO DFA
+    // ============================================================
+    class NFAtoDFAConverter {
+        constructor(nfa) {
+            this.nfa = nfa; this.dfa = new Automaton(); this.dfa.isDFA = true;
+            this.steps = []; this.stateIndex = 0; this.alphabetIndex = 0;
+            this.unreachableStates = null;
+        }
+        epsilonClosure(states) {
+            const closure = new Set(states); const stack = [...states];
+            while (stack.length) {
+                const state = stack.pop();
+                const eps = this.nfa.transitions[state] && this.nfa.transitions[state]['ε'];
+                if (eps) for (const t of eps) { if (!closure.has(t)) { closure.add(t); stack.push(t); } }
+            }
+            return closure;
+        }
+        getAlphabet() {
+            const a = new Set();
+            for (const s of this.nfa.states)
+                if (this.nfa.transitions[s])
+                    for (const sym of Object.keys(this.nfa.transitions[s]))
+                        if (sym !== 'ε') a.add(sym);
+            return [...a].sort();
+        }
+        setStateKey(states) { return '{' + [...states].sort().join(',') + '}'; }
+        convertAllAtOnce() {
+            const alphabet = this.getAlphabet();
+            const startClosure = this.epsilonClosure([this.nfa.startState]);
+            const startKey = this.setStateKey(startClosure);
+            this.dfa.setStartState(startKey);
+            const stateMap = new Map(); stateMap.set(startKey, startClosure);
+            if ([...startClosure].some(s => this.nfa.acceptStates.includes(s))) this.dfa.setAcceptState(startKey, true);
+            const unprocessed = [startKey]; const processed = new Set();
+            while (unprocessed.length) {
+                const key = unprocessed.shift();
+                if (processed.has(key)) continue;
+                processed.add(key);
+                const states = stateMap.get(key);
+                for (const sym of alphabet) {
+                    const next = new Set();
+                    for (const s of states) {
+                        const t = this.nfa.transitions[s] && this.nfa.transitions[s][sym];
+                        if (t) for (const target of t) next.add(target);
+                    }
+                    if (!next.size) continue;
+                    const closure = this.epsilonClosure([...next]);
+                    const nk = this.setStateKey(closure);
+                    if (!stateMap.has(nk)) {
+                        stateMap.set(nk, closure);
+                        if ([...closure].some(s => this.nfa.acceptStates.includes(s))) this.dfa.setAcceptState(nk, true);
+                        unprocessed.push(nk);
+                    }
+                    this.dfa.addTransition(key, sym, nk);
+                }
+            }
+            this.removeUnreachableStates();
+            return this.dfa;
+        }
+        removeUnreachableStates() {
+            const reachable = new Set(); const queue = [this.dfa.startState]; reachable.add(this.dfa.startState);
+            while (queue.length) {
+                const cur = queue.shift();
+                if (this.dfa.transitions[cur])
+                    for (const sym of Object.keys(this.dfa.transitions[cur]))
+                        for (const t of this.dfa.transitions[cur][sym])
+                            if (!reachable.has(t)) { reachable.add(t); queue.push(t); }
+            }
+            this.dfa.states = this.dfa.states.filter(s => reachable.has(s));
+            this.dfa.acceptStates = this.dfa.acceptStates.filter(s => reachable.has(s));
+            for (const s of Object.keys(this.dfa.transitions)) if (!reachable.has(s)) delete this.dfa.transitions[s];
+        }
+        getNextStep() {
+            if (!this.dfa.states.length) return 'initialize';
+            if (this.stateIndex < this.dfa.states.length) return 'add_transition';
+            if (!this.unreachableStates) this.unreachableStates = this.getUnreachableStates();
+            if (this.unreachableStates.length) return 'delete_state';
+            return null;
+        }
+        getUnreachableStates() {
+            const reachable = new Set(); const queue = [this.dfa.startState]; reachable.add(this.dfa.startState);
+            while (queue.length) {
+                const cur = queue.shift();
+                if (this.dfa.transitions[cur])
+                    for (const sym of Object.keys(this.dfa.transitions[cur]))
+                        for (const t of this.dfa.transitions[cur][sym])
+                            if (!reachable.has(t)) { reachable.add(t); queue.push(t); }
+            }
+            return this.dfa.states.filter(s => !reachable.has(s));
+        }
+        stepInitialize() {
+            const alphabet = this.getAlphabet();
+            const sc = this.epsilonClosure([this.nfa.startState]);
+            const sk = this.setStateKey(sc);
+            this.dfa.setStartState(sk);
+            if ([...sc].some(s => this.nfa.acceptStates.includes(s))) this.dfa.setAcceptState(sk, true);
+            this.steps.push({ type: 'initialize', desc: `Initialize DFA with start state ${sk}` });
+        }
+        stepAddTransition() {
+            const alphabet = this.getAlphabet();
+            const state = this.dfa.states[this.stateIndex];
+            const symbol = alphabet[this.alphabetIndex];
+            const currentStates = this.parseStateKey(state);
+            const nextStates = new Set();
+            for (const s of currentStates) {
+                const t = this.nfa.transitions[s] && this.nfa.transitions[s][symbol];
+                if (t) for (const target of t) nextStates.add(target);
+            }
+            if (!nextStates.size) {
+                this.alphabetIndex++;
+                if (this.alphabetIndex >= alphabet.length) { this.stateIndex++; this.alphabetIndex = 0; }
+                this.steps.push({ type: 'skip', desc: `No transition from ${state} on '${symbol}'` });
+                return { type: 'skip', desc: `No transition from ${state} on '${symbol}'` };
+            }
+            const closure = this.epsilonClosure([...nextStates]);
+            const nk = this.setStateKey(closure);
+            if (!this.dfa.states.includes(nk)) {
+                this.dfa.addState(nk);
+                if ([...closure].some(s => this.nfa.acceptStates.includes(s))) this.dfa.setAcceptState(nk, true);
+            }
+            this.dfa.transitions[state][symbol] = [nk];
+            this.alphabetIndex++;
+            if (this.alphabetIndex >= alphabet.length) { this.stateIndex++; this.alphabetIndex = 0; }
+            this.steps.push({ type: 'add_transition', desc: `${state} --'${symbol}'--> ${nk}` });
+            return { type: 'add_transition', desc: `${state} --'${symbol}'--> ${nk}` };
+        }
+        stepDeleteUnreachable() {
+            const state = this.unreachableStates.shift();
+            this.dfa.states = this.dfa.states.filter(s => s !== state);
+            this.dfa.acceptStates = this.dfa.acceptStates.filter(s => s !== state);
+            delete this.dfa.transitions[state];
+            this.steps.push({ type: 'delete_state', desc: `Remove unreachable: ${state}` });
+        }
+        stepForward() {
+            const st = this.getNextStep(); if (!st) return null;
+            if (st === 'initialize') { this.stepInitialize(); return this.steps[this.steps.length-1]; }
+            if (st === 'add_transition') return this.stepAddTransition();
+            if (st === 'delete_state') { this.stepDeleteUnreachable(); return this.steps[this.steps.length-1]; }
+            return null;
+        }
+        parseStateKey(key) { const inner = key.slice(1,-1); return inner ? inner.split(',') : []; }
+        reset() {
+            this.dfa = new Automaton(); this.dfa.isDFA = true;
+            this.steps = []; this.stateIndex = 0; this.alphabetIndex = 0; this.unreachableStates = null;
+        }
+    }
+
+    // ============================================================
+    // MODULE 5: DFA MINIMIZER
+    // ============================================================
+    class DFAMinimizer {
+        static minimize(dfa) {
+            const alphabet = [...dfa.alphabet].sort();
+            const startState = dfa.startState;
+            const acceptStates = new Set(dfa.acceptStates);
+            const reachable = new Set(); const queue = [startState]; reachable.add(startState);
+            while (queue.length) {
+                const cur = queue.shift();
+                if (dfa.transitions[cur])
+                    for (const sym of Object.keys(dfa.transitions[cur]))
+                        for (const t of dfa.transitions[cur][sym])
+                            if (!reachable.has(t)) { reachable.add(t); queue.push(t); }
+            }
+            const activeStates = [...reachable];
+            const accepting = new Set(activeStates.filter(s => acceptStates.has(s)));
+            const nonAccepting = new Set(activeStates.filter(s => !acceptStates.has(s)));
+            let partitions = [];
+            if (accepting.size) partitions.push(accepting);
+            if (nonAccepting.size) partitions.push(nonAccepting);
+            let changed = true;
+            while (changed) {
+                changed = false; const newParts = [];
+                for (const part of partitions) {
+                    if (part.size <= 1) { newParts.push(part); continue; }
+                    let split = false;
+                    for (const sym of alphabet) {
+                        const groups = new Map();
+                        for (const state of part) {
+                            let tg = null;
+                            const trans = dfa.transitions[state] && dfa.transitions[state][sym];
+                            const target = trans && trans.length ? trans[0] : null;
+                            if (target) for (let i = 0; i < partitions.length; i++) { if (partitions[i].has(target)) { tg = i; break; } }
+                            const key = tg !== null ? tg : -1;
+                            if (!groups.has(key)) groups.set(key, new Set());
+                            groups.get(key).add(state);
+                        }
+                        if (groups.size > 1) { for (const [,g] of groups) newParts.push(g); split = true; break; }
+                    }
+                    if (!split) newParts.push(part);
+                }
+                if (newParts.length !== partitions.length) changed = true;
+                else {
+                    let same = true;
+                    for (const np of newParts) {
+                        let found = false;
+                        for (const op of partitions) { if (np.size === op.size && [...np].every(s => op.has(s))) { found = true; break; } }
+                        if (!found) { same = false; break; }
+                    }
+                    if (!same) changed = true;
+                }
+                partitions = newParts;
+            }
+            const minDfa = new Automaton(); minDfa.isDFA = true; minDfa.alphabet = [...alphabet];
+            const pMap = new Map();
+            for (let i = 0; i < partitions.length; i++) {
+                const name = 'P' + i; const part = partitions[i];
+                minDfa.addState(name, [...part].some(s => acceptStates.has(s)));
+                for (const s of part) pMap.set(s, name);
+            }
+            const sp = pMap.get(startState); if (sp) minDfa.setStartState(sp);
+            for (let i = 0; i < partitions.length; i++) {
+                const name = 'P' + i; const rep = [...partitions[i]][0];
+                for (const sym of alphabet) {
+                    const trans = dfa.transitions[rep] && dfa.transitions[rep][sym];
+                    if (trans && trans.length) {
+                        const target = trans[0];
+                        const tp = pMap.get(target);
+                        if (tp) minDfa.addTransition(name, sym, tp);
+                    }
+                }
+            }
+            return minDfa;
+        }
+    }
+
+    // ============================================================
+    // MODULE 6: VISUALIZER
+    // ============================================================
+    class AutomataVisualizer {
+        constructor(canvasId) {
+            this.canvas = document.getElementById(canvasId);
+            this.ctx = this.canvas.getContext('2d');
+            this.nodeRadius = 34;
+            this.zoom = 1; this.panX = 0; this.panY = 0;
+            this.positions = {};
+        }
+        resize() {
+            const container = this.canvas.parentElement;
+            const w = container.clientWidth;
+            const h = container.clientHeight;
+            if (w > 0 && h > 0 && (this.canvas.width !== w || this.canvas.height !== h)) {
+                this.canvas.width = w;
+                this.canvas.height = h;
+            }
+        }
+        clear() { this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); }
+        draw(automaton) {
+            this.resize();
+            this.clear();
+            if (!automaton || !automaton.states.length || !this.canvas.width || !this.canvas.height) {
+                return;
+            }
+            this.positions = this.computeLayout(automaton);
+            const ctx = this.ctx;
+            ctx.save();
+            ctx.translate(this.canvas.width/2 + this.panX, this.canvas.height/2 + this.panY);
+            ctx.scale(this.zoom, this.zoom);
+            ctx.translate(-this.canvas.width/2, -this.canvas.height/2);
+
+            // Group edges by (from, to) pair
+            const edges = {};
+            for (const from of automaton.states) {
+                if (!automaton.transitions[from]) continue;
+                for (const sym of Object.keys(automaton.transitions[from])) {
+                    for (const to of automaton.transitions[from][sym]) {
+                        const key = `${from}|${to}`;
+                        if (!edges[key]) edges[key] = { from, to, symbols: [] };
+                        if (!edges[key].symbols.includes(sym)) edges[key].symbols.push(sym);
+                    }
+                }
+            }
+
+            // Draw edges
+            for (const key in edges) {
+                const edge = edges[key];
+                const label = edge.symbols.join(', ');
+                this.drawEdge(ctx, this.positions[edge.from], this.positions[edge.to], label, edge.from === edge.to);
+            }
+
+            // Draw start marker
+            if (automaton.startState && this.positions[automaton.startState]) {
+                const p = this.positions[automaton.startState];
+                const len = 45;
+                ctx.beginPath(); ctx.moveTo(p.x - this.nodeRadius - len, p.y); ctx.lineTo(p.x - this.nodeRadius - 4, p.y);
+                ctx.strokeStyle = '#64748b'; ctx.lineWidth = 2; ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(p.x - this.nodeRadius - 4, p.y);
+                ctx.lineTo(p.x - this.nodeRadius + 4, p.y - 5); ctx.lineTo(p.x - this.nodeRadius + 4, p.y + 5);
+                ctx.closePath(); ctx.fillStyle = '#64748b'; ctx.fill();
+            }
+
+            // Draw nodes
+            for (const state of automaton.states) {
+                const p = this.positions[state]; if (!p) continue;
+                this.drawNode(ctx, p.x, p.y, state, automaton.acceptStates.includes(state), state === automaton.startState);
+            }
+            ctx.restore();
+        }
+        computeLayout(automaton) {
+            const positions = {}; const states = automaton.states; const n = states.length;
+            if (!n) return positions;
+            
+            const W = this.canvas.width / this.zoom;
+            const H = this.canvas.height / this.zoom;
+            const cx = W / 2, cy = H / 2;
+            
+            // Dynamic radius based on number of states and canvas size
+            const minRadius = 60;
+            const maxRadius = Math.min(W, H) * 0.4;
+            const radius = Math.max(minRadius, Math.min(maxRadius, 50 + n * 15));
+            
+            for (let i = 0; i < n; i++) {
+                const angle = (i / n) * 2 * Math.PI - Math.PI/2;
+                positions[states[i]] = { 
+                    x: cx + radius * Math.cos(angle), 
+                    y: cy + radius * Math.sin(angle) 
+                };
+            }
+            return positions;
+        }
+        drawNode(ctx, x, y, label, isAccept, isStart) {
+            ctx.beginPath(); ctx.arc(x, y, this.nodeRadius, 0, Math.PI * 2);
+            
+            let color = '#ffffff';
+            let stroke = '#94a3b8';
+            let textColor = '#0f172a';
+            
+            if (isStart && !isAccept) {
+                color = '#eff6ff';
+                stroke = '#2563eb';
+                textColor = '#1e3a8a';
+            } else if (isAccept) {
+                color = '#ecfdf5';
+                stroke = '#059669';
+                textColor = '#064e3b';
+            }
+            
+            ctx.fillStyle = color; ctx.fill();
+            ctx.strokeStyle = stroke; ctx.lineWidth = 2; ctx.stroke();
+            
+            if (isAccept) {
+                ctx.beginPath(); ctx.arc(x, y, this.nodeRadius - 4, 0, Math.PI * 2);
+                ctx.strokeStyle = stroke; ctx.lineWidth = 1.2; ctx.stroke();
+            }
+            
+            ctx.fillStyle = textColor; ctx.font = '600 12px -apple-system, sans-serif';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            
+            // Better label display for long state names (especially Min DFA)
+            let displayLabel = label;
+            if (label.length > 18) {
+                // For names like DFA_q0_q1_q2, show first_.._last
+                if (label.includes('_')) {
+                    const parts = label.split('_');
+                    if (parts.length >= 3) {
+                        displayLabel = parts[0] + '_.._' + parts[parts.length - 1];
+                    } else {
+                        displayLabel = label.substring(0, 15) + '...';
+                    }
+                } else if (label.startsWith('{') && label.endsWith('}')) {
+                    // For {q0,q1,q2} format
+                    const inner = label.slice(1, -1);
+                    const parts = inner.split(',');
+                    if (parts.length > 2) {
+                        displayLabel = '{' + parts[0] + ',..,' + parts[parts.length-1] + '}';
+                    } else {
+                        displayLabel = label;
+                    }
+                } else {
+                    displayLabel = label.substring(0, 15) + '...';
+                }
+            } else if (displayLabel.length > 12) {
+                displayLabel = displayLabel.substring(0, 11) + '...';
+            }
+            
+            ctx.fillText(displayLabel, x, y);
+        }
+        drawEdge(ctx, from, to, symbol, isSelf) {
+            if (!from || !to) return;
+            if (isSelf) {
+                const cx = from.x + this.nodeRadius + 16;
+                const cy = from.y - this.nodeRadius - 12;
+                ctx.beginPath(); ctx.arc(cx, cy, 16, Math.PI * 0.7, Math.PI * 1.8);
+                ctx.strokeStyle = '#64748b'; ctx.lineWidth = 1.5; ctx.stroke();
+                const a = Math.PI * 1.8;
+                this.arrowhead(ctx, cx + 16 * Math.cos(a), cy + 16 * Math.sin(a), a + 0.3);
+                ctx.fillStyle = '#334155'; ctx.font = '500 12px "JetBrains Mono", monospace';
+                ctx.textAlign = 'center'; ctx.fillText(symbol === 'ε' ? 'ε' : symbol, cx, cy - 20);
+            } else {
+                const dx = to.x - from.x, dy = to.y - from.y;
+                const dist = Math.sqrt(dx*dx + dy*dy); if (!dist) return;
+                const nx = dx/dist, ny = dy/dist;
+                const sx = from.x + nx * this.nodeRadius, sy = from.y + ny * this.nodeRadius;
+                const ex = to.x - nx * (this.nodeRadius + 8), ey = to.y - ny * (this.nodeRadius + 8);
+                const mx = (sx+ex)/2, my = (sy+ey)/2;
+                const off = 28;
+                const cpx = mx + (-ny) * off, cpy = my + nx * off;
+                ctx.beginPath(); ctx.moveTo(sx, sy); ctx.quadraticCurveTo(cpx, cpy, ex, ey);
+                ctx.strokeStyle = '#64748b'; ctx.lineWidth = 1.5; ctx.stroke();
+                const t = 0.95;
+                const ax = (1-t)*(1-t)*sx + 2*(1-t)*t*cpx + t*t*ex;
+                const ay = (1-t)*(1-t)*sy + 2*(1-t)*t*cpy + t*t*ey;
+                this.arrowhead(ctx, ax, ay, Math.atan2(ey-ay, ex-ax));
+                const lx = (sx + 2*cpx + ex)/4, ly = (sy + 2*cpy + ey)/4;
+                ctx.fillStyle = '#334155'; ctx.font = '500 12px "JetBrains Mono", monospace';
+                ctx.textAlign = 'center'; ctx.fillText(symbol === 'ε' ? 'ε' : symbol, lx, ly - 8);
+            }
+        }
+        arrowhead(ctx, x, y, angle) {
+            const s = 6;
+            ctx.beginPath(); ctx.moveTo(x, y);
+            ctx.lineTo(x - s * Math.cos(angle - 0.4), y - s * Math.sin(angle - 0.4));
+            ctx.lineTo(x - s * Math.cos(angle + 0.4), y - s * Math.sin(angle + 0.4));
+            ctx.closePath(); ctx.fillStyle = '#64748b'; ctx.fill();
+        }
+        zoomIn() { this.zoom = Math.min(3, this.zoom * 1.2); }
+        zoomOut() { this.zoom = Math.max(0.3, this.zoom / 1.2); }
+        zoomFit() { this.zoom = 1; this.panX = 0; this.panY = 0; }
+    }
+
+    // ============================================================
+    // MODULE 7: TABLE RENDERER
+    // ============================================================
+    class TableRenderer {
+        static render(automaton, showEpsilon = false) {
+            if (!automaton || !automaton.states.length) return '<p style="color:var(--text-muted);font-size:0.75rem;">No data</p>';
+            let alphabet = [...automaton.alphabet].filter(s => s !== 'ε').sort();
+            if (showEpsilon) alphabet = ['ε', ...alphabet];
+            let h = '<table class="delta-table"><thead><tr><th>State</th>';
+            for (const sym of alphabet) h += `<th>${esc(sym)}</th>`;
+            h += '</tr></thead><tbody>';
+            for (const state of automaton.states) {
+                const acc = automaton.acceptStates.includes(state);
+                const st = state === automaton.startState;
+                let cls = 'state-cell';
+                let markers = '';
+                if (st) { cls += ' start-marker'; markers += '→'; }
+                if (acc) { cls += ' accept-marker'; markers += '✓'; }
+                
+                const displayState = state.length > 20 ? state.substring(0, 18) + '…' : state;
+                h += `<tr><td class="${cls}" title="${esc(state)}">${esc(displayState)} ${markers}</td>`;
+                for (const sym of alphabet) {
+                    const targets = automaton.getTransitions(state, sym);
+                    const cellText = targets.map(t => t.length > 10 ? t.substring(0, 8) + '…' : t).join(', ');
+                    const fullText = targets.join(', ');
+                    h += targets.length ? `<td title="${esc(fullText)}">${esc(cellText)}</td>` : '<td class="empty-cell">—</td>';
+                }
+                h += '</tr>';
+            }
+            h += '</tbody></table>';
+            return h;
+        }
+    }
+    function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    // ============================================================
+    // MODULE 8: APP CONTROLLER
+    // ============================================================
+    const App = {
+        nfa: null, dfa: null, minDfa: null,
+        converter: null, animTimer: null,
+        activeTab: 'nfa', currentStep: 1,
+        vis: null,
+
+        init() {
+            this.vis = new AutomataVisualizer('main-canvas');
+            window.addEventListener('resize', () => { if (this.getCurrentAutomaton()) this.vis.draw(this.getCurrentAutomaton()); });
+            this.bindEvents();
+            this.switchTab('nfa');
+        },
+
+        bindEvents() {
+            document.getElementById('btn-regex-nfa').addEventListener('click', () => this.buildNFA());
+            document.getElementById('btn-simulate').addEventListener('click', () => this.simulate());
+            document.getElementById('btn-dfa-all').addEventListener('click', () => this.dfaAllAtOnce());
+            document.getElementById('btn-dfa-step').addEventListener('click', () => this.dfaStep());
+            document.getElementById('btn-dfa-animate').addEventListener('click', () => this.dfaAnimate());
+            document.getElementById('btn-minimize').addEventListener('click', () => this.minimize());
+            document.getElementById('btn-reset-all').addEventListener('click', () => this.resetAll());
+            document.getElementById('btn-dfa-reset').addEventListener('click', () => this.resetDFA());
+            document.getElementById('btn-zoom-in').addEventListener('click', () => { this.vis.zoomIn(); this.redraw(); });
+            document.getElementById('btn-zoom-out').addEventListener('click', () => { this.vis.zoomOut(); this.redraw(); });
+            document.getElementById('btn-zoom-fit').addEventListener('click', () => { this.vis.zoomFit(); this.redraw(); });
+
+            document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => this.switchTab(t.dataset.tab)));
+            document.querySelectorAll('.preset-chip').forEach(c => c.addEventListener('click', () => {
+                document.getElementById('regex-input').value = c.dataset.regex;
+                this.buildNFA();
+            }));
+
+            document.getElementById('regex-input').addEventListener('keydown', e => { if (e.key === 'Enter') this.buildNFA(); });
+            document.getElementById('test-string').addEventListener('keydown', e => { if (e.key === 'Enter' && !document.getElementById('btn-simulate').disabled) this.simulate(); });
+        },
+
+        getCurrentAutomaton() {
+            if (this.activeTab === 'nfa') return this.nfa;
+            if (this.activeTab === 'dfa') return this.dfa;
+            return this.minDfa;
+        },
+
+        switchTab(tab) {
+            this.activeTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+            const titles = { nfa: 'NFA Details', dfa: 'DFA Details', min: 'Minimized DFA Details' };
+            document.getElementById('panel-title').textContent = titles[tab];
+            this.vis.zoomFit();
+            this.redraw();
+            this.updatePanel();
+        },
+
+        goToStep(step) {
+            if (step === 1) this.switchTab('nfa');
+            if (step === 2 && this.dfa) this.switchTab('dfa');
+            if (step === 3 && this.minDfa) this.switchTab('min');
+        },
+
+        updatePipeline() {
+            const s1 = document.getElementById('step-1');
+            const s2 = document.getElementById('step-2');
+            const s3 = document.getElementById('step-3');
+            const c1 = document.getElementById('conn-1');
+            const c2 = document.getElementById('conn-2');
+
+            s1.classList.toggle('active', !this.nfa);
+            s1.classList.toggle('done', !!this.nfa);
+            s1.classList.toggle('disabled', false);
+
+            c1.classList.toggle('done', !!this.nfa);
+            s2.classList.toggle('disabled', !this.nfa);
+            s2.classList.toggle('active', this.nfa && !this.dfa);
+            s2.classList.toggle('done', !!this.dfa);
+
+            c2.classList.toggle('done', !!this.dfa);
+            s3.classList.toggle('disabled', !this.dfa);
+            s3.classList.toggle('active', this.dfa && !this.minDfa);
+            s3.classList.toggle('done', !!this.minDfa);
+        },
+
+        updateCounts() {
+            document.getElementById('tab-nfa-count').textContent = this.nfa ? this.nfa.states.length : '—';
+            document.getElementById('tab-dfa-count').textContent = this.dfa ? this.dfa.states.length : '—';
+            document.getElementById('tab-min-count').textContent = this.minDfa ? this.minDfa.states.length : '—';
+        },
+
+        redraw() {
+            const auto = this.getCurrentAutomaton();
+            const empty = document.getElementById('canvas-empty');
+            if (auto && auto.states.length) {
+                empty.style.display = 'none';
+                this.vis.draw(auto);
+            } else {
+                empty.style.display = 'flex';
+                this.vis.clear();
+            }
+        },
+
+        updatePanel() {
+            const auto = this.getCurrentAutomaton();
+            const statsEl = document.getElementById('panel-stats');
+            const tableEl = document.getElementById('panel-table');
+            const resultEl = document.getElementById('panel-result');
+            const badgeEl = document.getElementById('panel-badge');
+            const logEl = document.getElementById('panel-log');
+
+            if (!auto || !auto.states.length) {
+                statsEl.innerHTML = '';
+                tableEl.innerHTML = '<p style="color:var(--text-muted);font-size:0.75rem;">No data yet</p>';
+                resultEl.innerHTML = '';
+                badgeEl.textContent = 'Pending';
+                logEl.style.display = 'none';
+                return;
+            }
+
+            const colors = { nfa: 'stat-blue', dfa: 'stat-green', min: 'stat-purple' };
+            const c = colors[this.activeTab];
+            statsEl.innerHTML = `
+                <div class="stats-grid">
+                    <div class="stat-card ${c}"><div class="stat-value">${auto.states.length}</div><div class="stat-label">States</div></div>
+                    <div class="stat-card ${c}"><div class="stat-value">${auto.alphabet.filter(s=>s!=='ε').length}</div><div class="stat-label">Symbols</div></div>
+                    <div class="stat-card ${c}"><div class="stat-value">${this.countTransitions(auto)}</div><div class="stat-label">Transitions</div></div>
+                    <div class="stat-card ${c}"><div class="stat-value">${auto.acceptStates.length}</div><div class="stat-label">Accept</div></div>
+                </div>`;
+
+            tableEl.innerHTML = TableRenderer.render(auto, this.activeTab === 'nfa');
+            badgeEl.textContent = 'Ready';
+            logEl.style.display = 'none';
+
+            if (this.activeTab === 'min' && this.dfa) {
+                const reduction = this.dfa.states.length - auto.states.length;
+                resultEl.innerHTML = `<div class="result-banner info">Minimized: ${this.dfa.states.length} → ${auto.states.length} states${reduction > 0 ? ` (${reduction} removed)` : ' (already minimal)'}</div>`;
+            } else {
+                resultEl.innerHTML = '';
+            }
+        },
+
+        countTransitions(auto) {
+            let c = 0;
+            for (const s of auto.states)
+                if (auto.transitions[s])
+                    for (const sym of Object.keys(auto.transitions[s]))
+                        c += auto.transitions[s][sym].length;
+            return c;
+        },
+
+        setButtonState(id, enabled) { document.getElementById(id).disabled = !enabled; },
+
+        buildNFA() {
+            const regex = document.getElementById('regex-input').value.trim();
+            if (!regex) {
+                this.resetAll();
+                document.getElementById('panel-result').innerHTML = '<div class="result-banner reject">Enter a regular expression</div>';
+                return;
+            }
+            this.resetAll();
+            try {
+                const parser = new RegexToNFA();
+                const result = parser.convert(regex);
+                this.nfa = result.nfa;
+                this.currentStep = 1;
+                this.switchTab('nfa');
+                this.updatePipeline();
+                this.updateCounts();
+                this.setButtonState('btn-simulate', true);
+                this.setButtonState('btn-dfa-all', true);
+                this.setButtonState('btn-dfa-step', true);
+                this.setButtonState('btn-dfa-animate', true);
+                document.getElementById('panel-badge').textContent = 'Ready';
+            } catch (e) {
+                document.getElementById('panel-result').innerHTML = `<div class="result-banner reject">Failed: ${e.message}</div>`;
+            }
+        },
+
+        simulate() {
+            const auto = this.getCurrentAutomaton();
+            if (!auto) return;
+            const str = document.getElementById('test-string').value;
+            const accepted = NFASimulator.simulate(auto, str);
+            document.getElementById('panel-result').innerHTML = `<div class="result-banner ${accepted ? 'accept' : 'reject'}">${accepted ? '✓' : '✗'} String "${esc(str)}" is ${accepted ? 'ACCEPTED' : 'REJECTED'}</div>`;
+        },
+
+        dfaAllAtOnce() {
+            if (!this.nfa) return;
+            this.stopAnim();
+            this.converter = new NFAtoDFAConverter(this.nfa);
+            this.dfa = this.converter.convertAllAtOnce();
+            this.currentStep = 2;
+            this.switchTab('dfa');
+            this.updatePipeline();
+            this.updateCounts();
+            this.setButtonState('btn-minimize', true);
+            this.setButtonState('btn-dfa-all', false);
+            this.setButtonState('btn-dfa-step', false);
+            this.setButtonState('btn-dfa-animate', false);
+            document.getElementById('panel-badge').textContent = 'Ready';
+            document.getElementById('panel-log').style.display = 'none';
+        },
+
+        dfaStep() {
+            if (!this.nfa) return;
+            this.stopAnim();
+            if (!this.converter) this.converter = new NFAtoDFAConverter(this.nfa);
+            const step = this.converter.stepForward();
+            if (step) {
+                this.dfa = this.converter.dfa.clone();
+                this.switchTab('dfa');
+                this.updateCounts();
+                document.getElementById('panel-badge').textContent = 'Converting…';
+                this.appendLog(step.desc);
+            }
+            if (!this.converter.getNextStep()) {
+                this.dfa = this.converter.dfa.clone();
+                this.currentStep = 2;
+                this.updatePipeline();
+                this.updateCounts();
+                this.setButtonState('btn-minimize', true);
+                this.setButtonState('btn-dfa-step', false);
+                this.setButtonState('btn-dfa-animate', false);
+                document.getElementById('panel-badge').textContent = 'Ready';
+            }
+            this.setButtonState('btn-dfa-reset', true);
+        },
+
+        dfaAnimate() {
+            if (!this.nfa) return;
+            this.stopAnim();
+            if (!this.converter) this.converter = new NFAtoDFAConverter(this.nfa);
+            this.setButtonState('btn-dfa-animate', false);
+            this.setButtonState('btn-dfa-step', false);
+            this.setButtonState('btn-dfa-all', false);
+            this.setButtonState('btn-dfa-reset', true);
+            document.getElementById('panel-badge').textContent = 'Animating…';
+            document.getElementById('panel-log').style.display = 'block';
+            document.getElementById('log-entries').innerHTML = '';
+            this.animTimer = setInterval(() => {
+                const step = this.converter.stepForward();
+                if (step) {
+                    this.dfa = this.converter.dfa.clone();
+                    this.switchTab('dfa');
+                    this.updateCounts();
+                    this.appendLog(step.desc);
+                }
+                if (!this.converter.getNextStep()) {
+                    this.stopAnim();
+                    this.dfa = this.converter.dfa.clone();
+                    this.currentStep = 2;
+                    this.updatePipeline();
+                    this.updateCounts();
+                    this.setButtonState('btn-minimize', true);
+                    document.getElementById('panel-badge').textContent = 'Ready';
+                }
+            }, 250);
+        },
+
+        appendLog(text) {
+            const el = document.getElementById('log-entries');
+            el.style.display = 'block';
+            document.getElementById('panel-log').style.display = 'block';
+            const num = el.children.length + 1;
+            el.innerHTML += `<div class="log-entry fade-in"><span class="log-num">${num}.</span>${esc(text)}</div>`;
+            el.scrollTop = el.scrollHeight;
+        },
+
+        minimize() {
+            if (!this.dfa) return;
+            try {
+                this.minDfa = DFAMinimizer.minimize(this.dfa);
+                this.currentStep = 3;
+                this.switchTab('min');
+                this.updatePipeline();
+                this.updateCounts();
+                document.getElementById('panel-badge').textContent = 'Ready';
+            } catch (e) {
+                document.getElementById('panel-result').innerHTML = `<div class="result-banner reject">Failed: ${e.message}</div>`;
+            }
+        },
+
+        resetDFA() {
+            this.stopAnim();
+            this.converter = null; this.dfa = null;
+            this.minDfa = null;
+            this.currentStep = 1;
+            this.updatePipeline();
+            this.updateCounts();
+            this.setButtonState('btn-dfa-all', !!this.nfa);
+            this.setButtonState('btn-dfa-step', !!this.nfa);
+            this.setButtonState('btn-dfa-animate', !!this.nfa);
+            this.setButtonState('btn-minimize', false);
+            this.setButtonState('btn-dfa-reset', false);
+            document.getElementById('panel-log').style.display = 'none';
+            document.getElementById('log-entries').innerHTML = '';
+            if (this.activeTab === 'dfa' || this.activeTab === 'min') this.switchTab('nfa');
+        },
+
+        resetAll() {
+            this.stopAnim();
+            this.nfa = null; this.dfa = null; this.minDfa = null;
+            this.converter = null; this.currentStep = 1;
+            this.updatePipeline(); this.updateCounts();
+            this.setButtonState('btn-simulate', false);
+            this.setButtonState('btn-dfa-all', false);
+            this.setButtonState('btn-dfa-step', false);
+            this.setButtonState('btn-dfa-animate', false);
+            this.setButtonState('btn-minimize', false);
+            this.setButtonState('btn-dfa-reset', false);
+            document.getElementById('panel-result').innerHTML = '';
+            document.getElementById('panel-log').style.display = 'none';
+            document.getElementById('log-entries').innerHTML = '';
+            this.switchTab('nfa');
+        },
+
+        stopAnim() {
+            if (this.animTimer) { clearInterval(this.animTimer); this.animTimer = null; }
+        }
+    };
+
+    App.init();
+    </script>
+</body>
+</html>
