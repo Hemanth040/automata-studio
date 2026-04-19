@@ -1714,6 +1714,25 @@
                     break; // Only need to run once for cleanup
                 }
                 this.dfa = this.converter.dfa.clone();
+                
+                // CRITICAL FIX: Ensure states array is properly populated
+                if (!this.dfa.states || this.dfa.states.length === 0) {
+                    this.dfa.states = Object.keys(this.dfa.transitions);
+                    if (this.dfa.startState && !this.dfa.states.includes(this.dfa.startState)) {
+                        this.dfa.states.unshift(this.dfa.startState);
+                    }
+                }
+                // Ensure alphabet is properly set
+                if (!this.dfa.alphabet || this.dfa.alphabet.length === 0) {
+                    const symbols = new Set();
+                    for (const s of this.dfa.states) {
+                        if (this.dfa.transitions[s]) {
+                            Object.keys(this.dfa.transitions[s]).forEach(sym => symbols.add(sym));
+                        }
+                    }
+                    this.dfa.alphabet = [...symbols];
+                }
+                
                 this.currentStep = 2;
                 this.updatePipeline();
                 this.updateCounts();
@@ -1757,6 +1776,25 @@
                     this.converter.stepForward();
                     
                     this.dfa = this.converter.dfa.clone();
+                    
+                    // CRITICAL FIX: Ensure states array is properly populated
+                    if (!this.dfa.states || this.dfa.states.length === 0) {
+                        this.dfa.states = Object.keys(this.dfa.transitions);
+                        if (this.dfa.startState && !this.dfa.states.includes(this.dfa.startState)) {
+                            this.dfa.states.unshift(this.dfa.startState);
+                        }
+                    }
+                    // Ensure alphabet is properly set
+                    if (!this.dfa.alphabet || this.dfa.alphabet.length === 0) {
+                        const symbols = new Set();
+                        for (const s of this.dfa.states) {
+                            if (this.dfa.transitions[s]) {
+                                Object.keys(this.dfa.transitions[s]).forEach(sym => symbols.add(sym));
+                            }
+                        }
+                        this.dfa.alphabet = [...symbols];
+                    }
+                    
                     this.currentStep = 2;
                     this.updatePipeline();
                     this.updateCounts();
